@@ -111,7 +111,7 @@ def do_main():
     db2 = mcli2.get_database('penguins')
     working_thread = threading.Thread(target=all_fetcher_thread, args=(rpool, db1,db2,user_agents))
     working_thread.start()
-    print('Tieba crawlers start to work!')
+    print('Penguins crawlers start to work!')
     working_thread.join()
 if __name__=='__main__':
     try:
