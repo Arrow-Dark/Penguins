@@ -27,8 +27,10 @@ def qieWriter_fetch(chlid):
         clusterInfo=res_json['clusterInfo'] if 'clusterInfo' in res_json.keys() else None
         chlrmation=myUtils.parse_channel(channelInfo)
         mediaIds=myUtils.parse_clusterInfo(clusterInfo) if clusterInfo else []
-        qie_log=dict(esHeader,**chlrmation)
+        esHeader['id']=chlrmation['penguin_id']
+        qie_log=[dict(esHeader,**chlrmation)]
         requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(qie_log))
+        print(chlrmation['penguin_id'],'into Elasticsearch!')
         # if len(mediaIds):
         #     myUtils.idsIntoRedis(pool,mediaIds)
         #db.qieWriter.update({'_id':chlrmation['chlid']},chlrmation,True)

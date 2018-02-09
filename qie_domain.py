@@ -45,17 +45,22 @@ def theForeman(pool,db1,db2,user_agents):
                     itemSMS=qieContext_fetcher.qieArticle_fetcher(new,random.choice(user_agents))
                 else:
                     itemSMS=qieContext_fetcher.qieVideo_fetcher(new,random.choice(user_agents))
+                itemSMS['index_name']='qie_articles_and_users'
+                itemSMS['type_name']='qie_articles_and_users'
                 itemSMS['crawled_at']=int(time.time()*1000)
                 itemSMS['resource_id']=itemSMS['id']
-                del itemSMS['id']
-                item=dict(chlrmation,**itemSMS)
+                item=[dict(chlrmation,**itemSMS)]
+
                 #rcli.lpush('qie_ES_list',item)
-                requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
+                status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
+                print(itemSMS['id'],'into Elasticsearch!')
+                #print(status)
                 new['state']=1
-                print(new)
+                #print(new)
                 db.newSMS.update({'_id':new['resource_id']},new,True)
                 time.sleep(3)
             chlid=None
+            break
         except:
             traceback.print_exc()
             time.sleep(20)
