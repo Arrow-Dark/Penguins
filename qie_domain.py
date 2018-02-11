@@ -14,7 +14,7 @@ import myUtils
 
 
 def all_fetcher_thread(pool, db1,db2,user_agents):
-    for i in range(1):
+    for i in range(3):
         t1=threading.Thread(target=theForeman,args=(pool,db1,db2,user_agents))
         t1.start()
 
@@ -60,7 +60,7 @@ def theForeman(pool,db1,db2,user_agents):
                 db.newSMS.update({'_id':new['resource_id']},new,True)
                 time.sleep(3)
             chlid=None
-            break
+            #break
         except:
             traceback.print_exc()
             time.sleep(20)

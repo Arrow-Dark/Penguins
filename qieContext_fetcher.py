@@ -12,7 +12,9 @@ import requests
 import json
 import myUtils
 
-heads={'Content-Type':'application/x-www-form-urlencoded','User-Agent':'%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','Referer':'http://cnews.qq.com/cnews/android/'}
+user_agents=['%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54660(android)']
+uids=['913dfe44789adef6','3ca8f2a9f2104bb0','19ee579b10df50c7']
+heads={'Content-Type':'application/x-www-form-urlencoded','Referer':'http://cnews.qq.com/cnews/android/'}
 esHeader={'index_name':'qie_logs','type_name':'qie_logs'}
 
 def qieWriter_fetch(chlid):
@@ -20,6 +22,10 @@ def qieWriter_fetch(chlid):
     #heads={'Content-Type':'application/x-www-form-urlencoded','User-Agent':'%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','Referer':'http://cnews.qq.com/cnews/android/'}
     data={'android_id':'913dfe44789adef6','apptype':'android','appver':'23_areading_4.6.50','currentTab':'kuaibao','uid':'913dfe44789adef6','needCluster':'yes','chlid':chlid}
     try:
+        heads['User-Agent']=random.choice(user_agents)
+        uid=random.choice(uids)
+        data['android_id']=uid
+        data['uid']=uid
         res=requests.post('https://r.cnews.qq.com/getSubItem',headers=heads,data=data)
         #print(res.text)
         res_json=json.loads(res.text)
@@ -40,6 +46,10 @@ def qieWriter_fetch(chlid):
         raise
 
 def getSubNews(chlid,data):
+    heads['User-Agent']=random.choice(user_agents)
+    uid=random.choice(uids)
+    data['android_id']=uid
+    data['uid']=uid
     res=requests.post('https://r.cnews.qq.com/getSubNewsIndex',headers=heads,data=data)
     res_json=json.loads(res.text)
     articleIds=res_json['ids'] if 'ids' in res_json else []
@@ -48,6 +58,10 @@ def getSubNews(chlid,data):
 
 
 def getVideoNews(chlid,data):
+    heads['User-Agent']=random.choice(user_agents)
+    uid=random.choice(uids)
+    data['android_id']=uid
+    data['uid']=uid
     res=requests.post('https://r.cnews.qq.com/getVideoNewsIndex',headers=heads,data=data)
     res_json=json.loads(res.text)
     videoIds=res_json['ids'] if 'ids' in res_json else []

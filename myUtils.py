@@ -9,7 +9,7 @@ import random
 import requests
 import json
 
-heads={'Content-Type':'application/x-www-form-urlencoded','User-Agent':'%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','Referer':'http://cnews.qq.com/cnews/android/'}
+#heads={'Content-Type':'application/x-www-form-urlencoded','User-Agent':'%E5%A4%A9%E5%A4%A9%E5%BF%AB%E6%8A%A54650(android)','Referer':'http://cnews.qq.com/cnews/android/'}
 
 def idsIntoRedis(pool,idList):
     try:
