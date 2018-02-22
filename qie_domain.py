@@ -14,7 +14,7 @@ import myUtils
 
 
 def all_fetcher_thread(pool, db1,db2,user_agents):
-    for i in range(3):
+    for i in range(1):
         t1=threading.Thread(target=theForeman,args=(pool,db1,db2,user_agents))
         t1.start()
 
