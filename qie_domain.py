@@ -58,7 +58,7 @@ def theForeman(pool,db1,db2,user_agents):
                 new['state']=1
                 #print(new)
                 db.newSMS.update({'_id':new['resource_id']},new,True)
-                time.sleep(3)
+                time.sleep(1)
             chlid=None
             #break
         except:
