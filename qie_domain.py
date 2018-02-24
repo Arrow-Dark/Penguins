@@ -17,18 +17,48 @@ def all_fetcher_thread(pool, db1,db2,user_agents):
     for i in range(1):
         t1=threading.Thread(target=theForeman,args=(pool,db1,db2,user_agents))
         t1.start()
-
+    for i in range(4):
+        t1=threading.Thread(target=contentFetch,args=(db1,db2,user_agents))
+        t1.start()
    
-
-
+def contentFetch(db1,db2,user_agents):
+    while 1:
+        db=db1 if db1.client.is_primary else db2
+        new=db.newSMS.find_and_modify(query={'state':0,'chlid':{'$exists':True}}, update={'$set': {'state': 1}}, upsert=False)
+        try:
+            del new['state']
+            if new['type']==0:
+                itemSMS=qieContext_fetcher.qieArticle_fetcher(new,random.choice(user_agents))
+            else:
+                itemSMS=qieContext_fetcher.qieVideo_fetcher(new,random.choice(user_agents))
+            itemSMS['index_name']='qie_articles_and_users'
+            itemSMS['type_name']='qie_articles_and_users'
+            itemSMS['crawled_at']=int(time.time()*1000)
+            itemSMS['resource_id']=itemSMS['id']
+            #print(itemSMS)
+            chlrmation=db.realWriter.find_one({'_id':new['chlid']})
+            #print(chlrmation)
+            #del chlrmation['chlid']
+            item=[dict(chlrmation,**itemSMS)]
+            status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
+            print(itemSMS['id'],'into Elasticsearch!')
+            #print(item)
+            new['state']=2
+            db.newSMS.update({'_id':new['resource_id']},new,True)
+            time.sleep(1)
+        except:
+            traceback.print_exc()
+            new['state']=0
+            db.newSMS.update({'_id':new['resource_id']},new,True)
 
 def theForeman(pool,db1,db2,user_agents):
-    rcli=redis.StrictRedis(connection_pool=pool)
+    #rcli=redis.StrictRedis(connection_pool=pool)
     chlid=None
     while 1:
         try:
             db=db1 if db1.client.is_primary else db2
             chlid=myUtils.zlpopzrpush(pool,'qieIds_set_right','qieIds_set_left') if not chlid else chlid
+            #chlid='5137734'
             writer=qieContext_fetcher.qieWriter_fetch(chlid)
             chlrmation=writer[0]
             mediaIds=writer[1]
@@ -36,35 +66,34 @@ def theForeman(pool,db1,db2,user_agents):
             newsToMongo=threading.Thread(target=myUtils.newSMS_into_mongo,args=(news,db))
             newsToMongo.start()
             db.qieWriter.update({'_id':chlrmation['penguin_id']+'_'+time.strftime("%Y-%m-%d",time.localtime())},chlrmation,True)
+            db.realWriter.update({'_id':chlrmation['penguin_id']},chlrmation,True)
             if len(mediaIds):
                 myUtils.idsIntoRedis(pool,mediaIds)
             del chlrmation['crawled_at']
-            for new in news:
-                del new['state']
-                if new['type']==0:
-                    itemSMS=qieContext_fetcher.qieArticle_fetcher(new,random.choice(user_agents))
-                else:
-                    itemSMS=qieContext_fetcher.qieVideo_fetcher(new,random.choice(user_agents))
-                itemSMS['index_name']='qie_articles_and_users'
-                itemSMS['type_name']='qie_articles_and_users'
-                itemSMS['crawled_at']=int(time.time()*1000)
-                itemSMS['resource_id']=itemSMS['id']
-                item=[dict(chlrmation,**itemSMS)]
-
-                #rcli.lpush('qie_ES_list',item)
-                status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
-                print(itemSMS['id'],'into Elasticsearch!')
-                #print(status)
-                new['state']=1
-                #print(new)
-                db.newSMS.update({'_id':new['resource_id']},new,True)
-                time.sleep(1)
+            # for new in news:
+            #     del new['state']
+            #     if new['type']==0:
+            #         itemSMS=qieContext_fetcher.qieArticle_fetcher(new,random.choice(user_agents))
+            #     else:
+            #         itemSMS=qieContext_fetcher.qieVideo_fetcher(new,random.choice(user_agents))
+            #     itemSMS['index_name']='qie_articles_and_users'
+            #     itemSMS['type_name']='qie_articles_and_users'
+            #     itemSMS['crawled_at']=int(time.time()*1000)
+            #     itemSMS['resource_id']=itemSMS['id']
+            #     item=[dict(chlrmation,**itemSMS)]
+            #     status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
+            #     print(itemSMS['id'],'into Elasticsearch!')
+            #     new['state']=1
+            #     db.newSMS.update({'_id':new['resource_id']},new,True)
+            #     time.sleep(1)
             chlid=None
+            #print('退出作者抓取')
             #break
+            time.sleep(15)
         except:
             traceback.print_exc()
+            print(chlid)
             time.sleep(20)
-            continue
             
             
                 

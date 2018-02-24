@@ -48,7 +48,7 @@ def parse_channel(channelInfo):
     chlname=channelInfo['chlname']
     desc=channelInfo['desc']
     icon=channelInfo['icon']
-    readCount=channelInfo['readCount']
+    readCount=channelInfo['readCount'] if 'readCount' in channelInfo.keys() else 0
     followCount=channelInfo['followCount']
     shareCount=channelInfo['shareCount']
     colCount=channelInfo['colCount']
@@ -62,6 +62,7 @@ def parse_clusterInfo(clusterInfo):
 def newSMS_into_mongo(news,db):
     for new in news:
         new['state']=0
+        #if not db.newSMS.find_one({'_id':new['id']}):
         db.newSMS.update({'_id':new['id']},new,True)
 
     

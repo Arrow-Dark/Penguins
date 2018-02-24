@@ -24,10 +24,10 @@ def qieWriter_fetch(chlid):
     try:
         heads['User-Agent']=random.choice(user_agents)
         uid=random.choice(uids)
+        print(uid)
         data['android_id']=uid
         data['uid']=uid
         res=requests.post('https://r.cnews.qq.com/getSubItem',headers=heads,data=data)
-        #print(res.text)
         res_json=json.loads(res.text)
         channelInfo=res_json['channelInfo']
         clusterInfo=res_json['clusterInfo'] if 'clusterInfo' in res_json.keys() else None
@@ -53,7 +53,7 @@ def getSubNews(chlid,data):
     res=requests.post('https://r.cnews.qq.com/getSubNewsIndex',headers=heads,data=data)
     res_json=json.loads(res.text)
     articleIds=res_json['ids'] if 'ids' in res_json else []
-    articleSMS=list({'id':x['id'],'comment_count':x['notecount'],'published_at':int(x['timestamp'])*1000,'type':0} for x in articleIds)
+    articleSMS=list({'id':x['id'],'comment_count':x['notecount'],'published_at':int(x['timestamp'])*1000,'type':0,'chlid':chlid} for x in articleIds)
     return articleSMS
 
 
@@ -65,7 +65,7 @@ def getVideoNews(chlid,data):
     res=requests.post('https://r.cnews.qq.com/getVideoNewsIndex',headers=heads,data=data)
     res_json=json.loads(res.text)
     videoIds=res_json['ids'] if 'ids' in res_json else []
-    videoSMS=list({'id':x['id'],'published_at':int(x['timestamp'])*1000,'type':4} for x in videoIds)
+    videoSMS=list({'id':x['id'],'published_at':int(x['timestamp'])*1000,'type':4,'chlid':chlid} for x in videoIds)
     return videoSMS
 
 def getNews(chlid):
@@ -90,16 +90,18 @@ def qieArticle_fetcher(itemSMS,user_agent):
             bs=BeautifulSoup(res.text,'html.parser')
             contentS=bs.select_one('#content')
             tit=contentS.select_one('p.title')
-            contbox=contentS.select('div.content-box > p.text')
-            imgbox=contentS.select('div.content-box > p[align="center"] > img')
-            contlike=bs.select_one('div.contlike > span.contlikenum.J-contlikenum')
+            contbox=contentS.select('p.text')
+            imgbox=contentS.select('p[align="center"] > img')
+            contlike=bs.select_one('div.contlike span.contlikenum.J-contlikenum')
             itemSMS['title']=tit.text.strip() if tit else ''
             itemSMS['content']='\n'.join(x.text.strip() for x in contbox if x)
             itemSMS['images']=list(x.get('src') for x in imgbox if x)
             itemSMS['up_count']=int(contlike.text) if contlike and contlike.text.isdecimal() else 0
+            #print('正常：',itemSMS)
             return itemSMS
         except:
             if flag>=3:
+                #print('异常：',itemSMS)
                 return itemSMS
             time.sleep(5)
             flag+=1
@@ -127,9 +129,12 @@ def qieVideo_fetcher(itemSMS,user_agent):
             itemSMS['title']=tit.text.strip() if tit else ''
             itemSMS['play_count'] = int(playcount.text) if playcount and re.search(r'\d',playcount.text) else 0
             itemSMS['up_count'] = int(contlike.text) if contlike and contlike.text.isdecimal() else 0
+            #print('正常：',itemSMS)
             return itemSMS
+            
         except:
             if flag>=3:
+                #print('异常：',itemSMS)
                 return itemSMS
             time.sleep(5)
             flag+=1
