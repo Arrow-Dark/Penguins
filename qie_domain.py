@@ -46,6 +46,7 @@ def contentFetch(db1,db2,user_agents):
             print(itemSMS['id'],'into Elasticsearch!')
             new['state']=2
             db.newSMS.update({'_id':new['resource_id']},new,True)
+            print(new['resource_id'],'update to mongo!')
             time.sleep(1)
         except:
             traceback.print_exc()
@@ -73,25 +74,7 @@ def theForeman(pool,db1,db2,user_agents):
             if len(mediaIds):
                 myUtils.idsIntoRedis(pool,mediaIds)
             del chlrmation['crawled_at']
-            # for new in news:
-            #     del new['state']
-            #     if new['type']==0:
-            #         itemSMS=qieContext_fetcher.qieArticle_fetcher(new,random.choice(user_agents))
-            #     else:
-            #         itemSMS=qieContext_fetcher.qieVideo_fetcher(new,random.choice(user_agents))
-            #     itemSMS['index_name']='qie_articles_and_users'
-            #     itemSMS['type_name']='qie_articles_and_users'
-            #     itemSMS['crawled_at']=int(time.time()*1000)
-            #     itemSMS['resource_id']=itemSMS['id']
-            #     item=[dict(chlrmation,**itemSMS)]
-            #     status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
-            #     print(itemSMS['id'],'into Elasticsearch!')
-            #     new['state']=1
-            #     db.newSMS.update({'_id':new['resource_id']},new,True)
-            #     time.sleep(1)
             chlid=None
-            #print('退出作者抓取')
-            #break
             time.sleep(15)
         except:
             traceback.print_exc()
