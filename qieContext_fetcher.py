@@ -24,7 +24,6 @@ def qieWriter_fetch(chlid):
     try:
         heads['User-Agent']=random.choice(user_agents)
         uid=random.choice(uids)
-        print(uid)
         data['android_id']=uid
         data['uid']=uid
         res=requests.post('https://r.cnews.qq.com/getSubItem',headers=heads,data=data)

@@ -35,14 +35,15 @@ def contentFetch(db1,db2,user_agents):
             itemSMS['type_name']='qie_articles_and_users'
             itemSMS['crawled_at']=int(time.time()*1000)
             itemSMS['resource_id']=itemSMS['id']
-            #print(itemSMS)
             chlrmation=db.realWriter.find_one({'_id':new['chlid']})
             #print(chlrmation)
             #del chlrmation['chlid']
+            del itemSMS['_id']
+            del chlrmation['_id']
             item=[dict(chlrmation,**itemSMS)]
+            #print(item)
             status=requests.post('http://59.110.52.213/stq/api/v1/pa/shareWrite/add',headers={'Content-Type':'application/json'},data=json.dumps(item))
             print(itemSMS['id'],'into Elasticsearch!')
-            #print(item)
             new['state']=2
             db.newSMS.update({'_id':new['resource_id']},new,True)
             time.sleep(1)
@@ -52,10 +53,12 @@ def contentFetch(db1,db2,user_agents):
             db.newSMS.update({'_id':new['resource_id']},new,True)
 
 def theForeman(pool,db1,db2,user_agents):
-    #rcli=redis.StrictRedis(connection_pool=pool)
+    rcli=redis.StrictRedis(connection_pool=pool)
     chlid=None
     while 1:
         try:
+            if not rcli.zcard('qieIds_set_right'):
+                time.sleep(3*3600)
             db=db1 if db1.client.is_primary else db2
             chlid=myUtils.zlpopzrpush(pool,'qieIds_set_right','qieIds_set_left') if not chlid else chlid
             #chlid='5137734'
@@ -93,6 +96,8 @@ def theForeman(pool,db1,db2,user_agents):
         except:
             traceback.print_exc()
             print(chlid)
+            rcli.sadd('qie_err_chlid',chlid)
+            chlid=None
             time.sleep(20)
             
             
